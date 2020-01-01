@@ -33,8 +33,8 @@ namespace DatabaseService.Controllers
 
             this.initDone = true;
 
-            //var authKey = await KeyVault.Singleton.GetSecretByKey("dbPrimary");
-            var authKey = "VVgqSae3zWC9XNXc2MfhQcw5y2LI4JQZQZOGXG8vy0zAbzayP0NgZB5HtFE8knAo2v2oRBlmfEdTiG2TC1zdgQ==";
+            var authKey = await KeyVault.Singleton.GetSecretByKey("dbPrimary");
+            //var authKey = "VVgqSae3zWC9XNXc2MfhQcw5y2LI4JQZQZOGXG8vy0zAbzayP0NgZB5HtFE8knAo2v2oRBlmfEdTiG2TC1zdgQ==";
 
             this.cosmosClient = new CosmosClient(EndpointUri, authKey);
             this.database = await this.cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
