@@ -45,6 +45,14 @@ namespace ResultProcessor
             app.UseMvc();
 
             ServiceDiscovery.Singleton.RegisterAppServiceAsService("ResultProcessor");
+
+            var serviceBus = new ServiceBusClient();
+            serviceBus.RegisterOnMessages(this.HandleServiceBusMessage);
+        }
+
+        private void HandleServiceBusMessage(long sequenceNr, string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }

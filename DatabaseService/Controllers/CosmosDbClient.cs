@@ -14,7 +14,6 @@ namespace DatabaseService.Controllers
 
         private bool initDone = false;
         
-        private static readonly string EndpointUri = "https://iegproductsdb.documents.azure.com:443/";
         private CosmosClient cosmosClient;
         private Database database;
         private Container container;
@@ -31,12 +30,14 @@ namespace DatabaseService.Controllers
             if (this.initDone)
                 return;
 
-            this.initDone = true;
+            this.initDone = true;                       
 
-            var authKey = await KeyVault.Singleton.GetSecretByKey("dbPrimary");
-            //var authKey = "VVgqSae3zWC9XNXc2MfhQcw5y2LI4JQZQZOGXG8vy0zAbzayP0NgZB5HtFE8knAo2v2oRBlmfEdTiG2TC1zdgQ==";
+            var endpointUri = await ServiceDiscovery.Singleton.GetServiceUrlByTag("database");
 
-            this.cosmosClient = new CosmosClient(EndpointUri, authKey);
+            //var authKey = await KeyVault.Singleton.GetSecretByKey("dbPrimary");
+            var authKey = "VVgqSae3zWC9XNXc2MfhQcw5y2LI4JQZQZOGXG8vy0zAbzayP0NgZB5HtFE8knAo2v2oRBlmfEdTiG2TC1zdgQ==";
+
+            this.cosmosClient = new CosmosClient(endpointUri.OriginalString, authKey);
             this.database = await this.cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
             this.container = await this.database.CreateContainerIfNotExistsAsync(containerId, "/id");
         }

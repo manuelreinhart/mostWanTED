@@ -4,37 +4,35 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Common.Tools;
+using System.Net.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace QuestionCreator.Controllers
 {
     [Route("/")]
     [ApiController]
     public class QuestionCreatorController : ControllerBase
-    {
-        // GET api/values
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<string>>> GetAsync()
-        {
-            var keyVaultUri = await KeyVault.Singleton.GetSecretByKey("asg");
-            return new string[] { "value1", "value2", keyVaultUri };
-        }
-
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<string>> GetAsync(string id)
-        {
-            var secret = await KeyVault.Singleton.GetSecretByKey(id);
-
-            if (secret == null)
-                return "secret not found";
-
-            return secret;
-        }
-
+    {               
         // POST api/values
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task PostAsync()
         {
+            using (var streamContent = new StreamContent(Request.Body))
+            {
+                var httpClient = new HttpClient();
+                httpClient.BaseAddress = await ServiceDiscovery.Singleton.GetServiceUrlByTag("DatabaseService");
+
+                var response = await httpClient.PostAsync("Database/insert", streamContent);
+                var content = await response.Content.ReadAsStringAsync();
+
+                Response.StatusCode = (int)response.StatusCode;
+                Response.ContentType = response.Content.Headers.ContentType?.ToString();
+                Response.ContentLength = response.Content.Headers.ContentLength;
+
+                await Response.WriteAsync(content);
+
+            }
+            
         }
 
     }

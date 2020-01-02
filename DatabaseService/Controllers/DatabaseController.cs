@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Models;
@@ -15,9 +16,9 @@ namespace DatabaseService.Controllers
    
         // GET api/values
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Question>>> GetAsync()
+        public async Task<ActionResult<IEnumerable<object>>> GetAsync()
         {            
-            var questions = await CosmosDbClient.Singleton.Get<Question>();
+            var questions = await CosmosDbClient.Singleton.Get<object>();
             return questions;
         }
 
@@ -38,11 +39,15 @@ namespace DatabaseService.Controllers
 
         // POST api/values
         [HttpPost("insert")]
-        public void Post([FromBody] string value)
+        public async Task PostAsync()
         {
-            List<object> questions = JsonConvert.DeserializeObject<List<object>>(value);
-            
-
+            using (var reader = new StreamReader(Request.Body))
+            {
+                var body = reader.ReadToEnd();
+                var question = JsonConvert.DeserializeObject<Question>(body);
+                question.id = new Random(1234).Next(1000, 9999).ToString();
+                await CosmosDbClient.Singleton.Insert(question);                
+            }            
         }
 
         // PUT api/values/5
