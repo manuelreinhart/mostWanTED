@@ -20,22 +20,7 @@ namespace DatabaseService.Controllers
         {            
             var questions = await CosmosDbClient.Singleton.Get<object>();
             return questions;
-        }
-
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<string>> GetAsync(string id)
-        {
-            dynamic item = new
-            {
-                id = id,
-                Name = "test",
-                age = 4
-            };            
-            await CosmosDbClient.Singleton.Insert(item);
-
-            return "value";
-        }
+        }                
 
         // POST api/values
         [HttpPost("insert")]
@@ -45,7 +30,8 @@ namespace DatabaseService.Controllers
             {
                 var body = reader.ReadToEnd();
                 var question = JsonConvert.DeserializeObject<Question>(body);
-                question.id = new Random(1234).Next(1000, 9999).ToString();
+                if (question.id == null)
+                    question.id = new Random().Next(1000, 9999).ToString();
                 await CosmosDbClient.Singleton.Insert(question);                
             }            
         }
